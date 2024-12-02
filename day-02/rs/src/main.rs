@@ -104,10 +104,7 @@ fn validate_sequence(numbers: &[i32]) -> ValidationResult {
 /// O(n²) where n is sequence length
 #[inline]
 fn validate_sequence_with_dampener(numbers: &[i32]) -> ValidationResult {
-    // First check if sequence is already valid
-    if matches!(validate_sequence(numbers), ValidationResult::Valid) {
-        return ValidationResult::Valid;
-    }
+    // Only called if sequence is already invalid from Part 1, so we can skip that check
 
     // Try removing each number once
     let mut temp_sequence = Vec::with_capacity(numbers.len() - 1);
@@ -198,28 +195,23 @@ fn main() -> io::Result<()> {
     metrics.parsing_time = parse_start.elapsed();
     metrics.total_sequences = sequences.len();
 
-    // Part 1 validation
+    // Combined validation
     let part1_start = Instant::now();
     for sequence in &sequences {
-        if matches!(validate_sequence(sequence), ValidationResult::Valid) {
+        let validation_result = validate_sequence(sequence);
+        if matches!(validation_result, ValidationResult::Valid) {
             metrics.part1_valid_count += 1;
             metrics.part2_valid_count += 1; // Valid sequences are also valid for part 2
+        } else if matches!(
+            validate_sequence_with_dampener(sequence),
+            ValidationResult::Valid
+        ) {
+            metrics.part2_valid_count += 1;
         }
     }
     metrics.part1_validation_time = part1_start.elapsed();
 
-    // Part 2 validation (only for invalid sequences from part 1)
     let part2_start = Instant::now();
-    for sequence in &sequences {
-        if !matches!(validate_sequence(sequence), ValidationResult::Valid)
-            && matches!(
-                validate_sequence_with_dampener(sequence),
-                ValidationResult::Valid
-            )
-        {
-            metrics.part2_valid_count += 1;
-        }
-    }
     metrics.part2_validation_time = part2_start.elapsed();
 
     // Report results
