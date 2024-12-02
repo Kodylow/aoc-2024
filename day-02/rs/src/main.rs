@@ -131,8 +131,7 @@ fn validate_sequence_with_dampener(numbers: &[i32]) -> ValidationResult {
 struct Metrics {
     file_read_time: std::time::Duration,
     parsing_time: std::time::Duration,
-    part1_validation_time: std::time::Duration,
-    part2_validation_time: std::time::Duration,
+    combined_validation_time: std::time::Duration,
     total_sequences: usize,
     part1_valid_count: usize,
     part2_valid_count: usize,
@@ -196,7 +195,7 @@ fn main() -> io::Result<()> {
     metrics.total_sequences = sequences.len();
 
     // Combined validation
-    let part1_start = Instant::now();
+    let combined_start = Instant::now();
     for sequence in &sequences {
         let validation_result = validate_sequence(sequence);
         if matches!(validation_result, ValidationResult::Valid) {
@@ -209,10 +208,7 @@ fn main() -> io::Result<()> {
             metrics.part2_valid_count += 1;
         }
     }
-    metrics.part1_validation_time = part1_start.elapsed();
-
-    let part2_start = Instant::now();
-    metrics.part2_validation_time = part2_start.elapsed();
+    metrics.combined_validation_time = combined_start.elapsed();
 
     // Report results
     println!("\nResults:");
@@ -227,12 +223,8 @@ fn main() -> io::Result<()> {
     println!("File read time: {:?}", metrics.file_read_time);
     println!("Parsing time: {:?}", metrics.parsing_time);
     println!(
-        "Part 1 validation time: {:?}",
-        metrics.part1_validation_time
-    );
-    println!(
-        "Part 2 validation time: {:?}",
-        metrics.part2_validation_time
+        "Combined validation time: {:?}",
+        metrics.combined_validation_time
     );
     println!("Total time: {:?}", start.elapsed());
 
@@ -243,12 +235,8 @@ fn main() -> io::Result<()> {
             metrics.parsing_time / metrics.total_sequences as u32
         );
         println!(
-            "Part 1: {:?}/sequence",
-            metrics.part1_validation_time / metrics.total_sequences as u32
-        );
-        println!(
-            "Part 2: {:?}/sequence",
-            metrics.part2_validation_time / metrics.total_sequences as u32
+            "Combined validation: {:?}/sequence",
+            metrics.combined_validation_time / metrics.total_sequences as u32
         );
     }
 
